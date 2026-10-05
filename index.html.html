@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R O S É E | Beauty & Care</title>
+    
+    <!-- مكتبات Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { 
+            --matte-black: #111111; 
+            --dark-charcoal: #2c2c2c;
+            --rose-gold: #C5A059; 
+            --soft-cream: #FDFBF7;
+            --brushed-silver: #B0B0B0;
+        }
+        
+        body { font-family: 'Cairo', 'Segoe UI', sans-serif; background-color: var(--soft-cream); margin: 0; padding: 0 0 40px 0; color: var(--dark-charcoal); }
+        .container { max-width: 600px; margin: 0 auto; background: transparent; }
+        
+        .header-logo { background-color: var(--matte-black); padding: 50px 20px 40px; text-align: center; position: relative; border-bottom: 2px solid var(--rose-gold); }
+        .brand-name { font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: 38px; color: white; letter-spacing: 14px; margin: 0 0 5px -14px; }
+        .brand-name span { color: var(--brushed-silver); }
+        .brand-tagline { font-family: 'Playfair Display', serif; font-style: italic; color: var(--rose-gold); letter-spacing: 4px; font-size: 13px; margin: 0; }
+        
+        #announcementsArea { padding: 20px 20px 0; }
+        .global-alert { background: var(--dark-charcoal); color: var(--soft-cream); border-left: 4px solid var(--rose-gold); padding: 12px 15px; font-weight: 400; font-size: 13px; margin-bottom: 15px; display: none; }
+        .published-offer { background: transparent; border: 1px solid var(--rose-gold); color: var(--matte-black); padding: 20px; text-align: center; margin-bottom: 20px; }
+        .published-offer h3 { margin: 0 0 10px 0; font-family: 'Playfair Display', serif; font-size: 20px; color: var(--matte-black); }
+        .published-offer p { margin: 0; font-size: 13px; line-height: 1.6; }
+
+        .section-box { padding: 25px 20px; margin: 0 20px 25px; border-bottom: 1px solid #eaeaea; }
+        h2 { font-family: 'Playfair Display', serif; color: var(--matte-black); font-size: 22px; margin-top: 0; margin-bottom: 25px; font-weight: 600; text-align: center; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--brushed-silver); text-transform: uppercase; letter-spacing: 1px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px 0; border: none; border-bottom: 1px solid #ddd; background: transparent; box-sizing: border-box; font-family: inherit; font-size: 15px; color: var(--matte-black); transition: 0.3s; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-bottom-color: var(--rose-gold); }
+        .optional-text { text-transform: none; font-size: 10px; }
+
+        .group-accordion { background: transparent; color: var(--matte-black); cursor: pointer; padding: 15px 0; width: 100%; border: none; border-bottom: 1px solid var(--rose-gold); text-align: right; outline: none; font-size: 16px; font-family: 'Playfair Display', serif; font-weight: 600; margin-bottom: 5px; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
+        .group-accordion i { color: var(--rose-gold); font-size: 12px; }
+        .group-panel { padding: 10px 0 20px; display: none; overflow: hidden; }
+        .category-subtitle { color: var(--brushed-silver); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; margin: 20px 0 15px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 20px; }
+        .product-card { text-align: center; background: transparent; transition: 0.3s; }
+        .product-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 4px; background-color: #eee; border: 1px solid #f5f5f5; }
+        .product-card h3 { font-family: 'Montserrat', sans-serif; font-size: 12px; margin: 12px 0 4px; color: var(--matte-black); font-weight: 500; letter-spacing: 1px; text-transform: uppercase; }
+        .product-price { color: var(--rose-gold); font-weight: 400; font-size: 13px; margin: 0 0 12px 0; font-family: 'Montserrat', sans-serif; }
+        
+        .counter { display: flex; justify-content: center; align-items: center; gap: 15px; }
+        .counter button { width: 26px; height: 26px; border: 1px solid var(--brushed-silver); background: transparent; color: var(--dark-charcoal); border-radius: 50%; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-family: 'Montserrat', sans-serif; }
+        .counter button:active, .counter button:hover { border-color: var(--rose-gold); color: var(--rose-gold); }
+        .counter span { font-weight: 400; font-size: 14px; min-width: 20px; color: var(--matte-black); font-family: 'Montserrat', sans-serif;}
+
+        /* قسم البرومو كود وملخص الفاتورة (Amazon Style) */
+        .cart-summary { background: #fff; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0; margin-top: 30px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        .promo-box { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
+        .promo-box input { border: 1px solid #ccc !important; padding: 10px 15px !important; text-transform: uppercase; font-weight: bold; border-radius: 4px; font-size: 14px; flex: 1; }
+        .promo-box input:focus { border-color: var(--rose-gold) !important; box-shadow: 0 0 5px rgba(197, 160, 89, 0.3); }
+        .promo-btn { background: var(--dark-charcoal); color: white; border: none; padding: 10px 20px; font-size: 13px; cursor: pointer; border-radius: 4px; font-family: 'Montserrat', sans-serif; letter-spacing: 1px; transition: 0.2s;}
+        .promo-btn:hover { background: var(--matte-black); }
+        
+        .checkout-details { border-top: 1px solid #eee; padding-top: 15px; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; color: #333; }
+        .summary-row.discount-row { color: #b12704; } /* اللون الأحمر لخصم أمازون */
+        .summary-row.total { font-weight: bold; font-size: 22px; color: #b12704; border-top: 2px solid #ddd; padding-top: 12px; margin-top: 8px; }
+
+        .submit-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: calc(100% - 40px); padding: 18px; background: var(--matte-black); color: var(--rose-gold); border: 1px solid var(--matte-black); font-family: 'Montserrat', sans-serif; letter-spacing: 2px; text-transform: uppercase; font-size: 13px; font-weight: 500; margin: 40px auto 0; cursor: pointer; transition: 0.4s; }
+        .submit-btn:hover { background: transparent; color: var(--matte-black); }
+
+        .btn-edit-order { background: transparent; color: var(--rose-gold); border: 1px solid var(--rose-gold); padding: 10px; cursor: pointer; font-size: 12px; width: 100%; margin-top: 15px; transition: 0.3s; font-family: inherit;}
+        .btn-edit-order:hover { background: var(--rose-gold); color: white; }
+
+        .tracking-box { border-bottom: none; background: #fff; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); margin: 20px; border-radius: 8px;}
+        .tracking-box h2 { font-size: 18px; margin-bottom: 15px; }
+        .tracking-box button { background: var(--rose-gold); color: white; border: none; padding: 12px; width: 100%; font-weight: bold; cursor: pointer; margin-top: 10px; font-family: inherit; font-size:13px; letter-spacing:1px;}
+        #trackResult { margin-top: 15px; text-align: center; font-size: 13px; }
+
+        .social-footer { display: flex; justify-content: center; gap: 25px; margin-top: 50px; padding-top: 30px; }
+        .social-footer a { color: var(--brushed-silver); font-size: 18px; text-decoration: none; transition: 0.3s; }
+        .social-footer a:hover { color: var(--rose-gold); transform: translateY(-3px); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header-logo">
+        <h1 class="brand-name">R O S <span>É</span> E</h1>
+        <p class="brand-tagline">BEAUTY & CARE</p>
+    </div>
+
+    <div id="announcementsArea">
+        <div id="globalAlertBanner" class="global-alert"></div>
+        <div id="offersBannerContainer"></div>
+    </div>
+
+    <div class="section-box tracking-box">
+        <h2>تتبع الطلب</h2>
+        <div class="form-group"><input type="text" id="trackOrderId" placeholder="رقم الطلب (مثال: ORD-123)"></div>
+        <div class="form-group"><input type="tel" id="trackPhone" placeholder="رقم الموبايل"></div>
+        <button onclick="trackOrder()">بحث</button>
+        <div id="trackResult"></div>
+    </div>
+
+    <div class="section-box" id="orderForm">
+        <h2>بيانات التوصيل</h2>
+        <div class="form-group"><label>الاسم بالكامل</label><input type="text" id="customerName" placeholder="الاسم ثلاثي"></div>
+        <div class="form-group"><label>رقم الموبايل</label><input type="tel" id="customerPhone" placeholder="01xxxxxxxxx"></div>
+        <div class="form-group"><label>رقم بديل <span class="optional-text">(اختياري)</span></label><input type="tel" id="customerPhone2" placeholder="01xxxxxxxxx"></div>
+        <div class="form-group"><label>العنوان</label><textarea id="customerAddress" rows="2" placeholder="المحافظة، المدينة، الشارع..."></textarea></div>
+    </div>
+    
+    <div class="section-box" style="border:none;">
+        <h2>The Collection</h2>
+        <div id="productsContainer"><p style="text-align:center; color:#888; font-size:13px;">جاري تحميل الكتالوج...</p></div>
+        
+        <!-- فاتورة العميل (Amazon Style) -->
+        <div class="cart-summary">
+            <div class="promo-box">
+                <input type="text" id="promoCodeInput" placeholder="أدخل كود الخصم (Promo Code)">
+                <button class="promo-btn" onclick="applyPromoCode()">تطبيق</button>
+            </div>
+            <div id="promoMsg" style="font-size:12px; margin-top:-15px; margin-bottom:15px; font-weight:bold;"></div>
+
+            <div class="checkout-details">
+                <div class="summary-row">
+                    <span>المجموع الفرعي (Items):</span> 
+                    <span id="subtotalVal">0.00 EGP</span>
+                </div>
+                <!-- صف الخصم (مخفي افتراضياً) -->
+                <div class="summary-row discount-row" id="discountRow" style="display:none;">
+                    <span id="discountCodeText">Promo Code:</span> 
+                    <span id="discountVal" dir="ltr">-0.00 EGP</span>
+                </div>
+                <div class="summary-row total">
+                    <span>الإجمالي النهائي (Order total):</span> 
+                    <span id="finalTotalVal">0.00 EGP</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="submit-btn" id="mainSubmitBtn" onclick="sendToWhatsApp()">إتمام الطلب</button>
+
+    <div class="social-footer">
+        <a href="https://wa.me/201117237246" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+        <a href="https://www.instagram.com/rosee_cosmo?stkn=dHp3ZmZoY2QwNHRn&utm_source=qr" target="_blank" title="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.facebook.com/share/19ku6pTCYz/?mibextid=wwXIfr" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://www.tiktok.com/@rose.cosmetics822" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i></a>
+    </div>
+</div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyD6yrJSnHm_ATTNoRB5q_Wi0_jeKvh4c-g",
+        authDomain: "rosee-erp.firebaseapp.com",
+        databaseURL: "https://rosee-erp-default-rtdb.firebaseio.com",
+        projectId: "rosee-erp",
+        storageBucket: "rosee-erp.firebasestorage.app",
+        messagingSenderId: "182782113100",
+        appId: "1:182782113100:web:59b71aa20c56286d9e0be9",
+        measurementId: "G-H4DRX7B92B"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const brandWhatsAppNumber = "201117237246"; 
+    let products = []; let orderCart = {}; let dynamicCatalog = {}; let promoCodesData = {};
+    let appliedPromo = null; let editingOrderId = null; let allOrdersList = [];
+
+    // تحويل روابط الصور (Drive & Postimages)
+    function fixImageLink(url) {
+        if (!url) return '';
+        if (url.includes('drive.google.com/file/d/')) {
+            let match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) { return `https://drive.google.com/uc?id=${match[1]}`; }
+        }
+        if (url.includes('postimg.cc/') && !url.includes('i.postimg.cc')) {
+            let match = url.match(/postimg\.cc\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) { return `https://i.postimg.cc/${match[1]}/image.jpg`; }
+        }
+        return url;
+    }
+
+    db.ref('rosee_data').on('value', snap => {
+        const data = snap.val() || {};
+        promoCodesData = data.promoCodes || {};
+        
+        const alertBanner = document.getElementById('globalAlertBanner');
+        if(data.globalAlert && data.globalAlert.trim() !== "") {
+            alertBanner.innerText = `تنبيه: ${data.globalAlert}`;
+            alertBanner.style.display = 'block';
+        } else { alertBanner.style.display = 'none'; }
+
+        const offersContainer = document.getElementById('offersBannerContainer');
+        offersContainer.innerHTML = '';
+        if(data.offers) {
+            let offersList = Array.isArray(data.offers) ? data.offers : Object.values(data.offers);
+            let publishedOffers = offersList.filter(o => o.status === 'published');
+            publishedOffers.forEach(o => {
+                offersContainer.innerHTML += `<div class="published-offer"><h3>${o.title}</h3><p>${o.text}</p></div>`;
+            });
+        }
+
+        if(data.catalog) {
+            dynamicCatalog = data.catalog; products = []; let pIndex = 1;
+            Object.keys(dynamicCatalog).forEach(key => {
+                let catData = dynamicCatalog[key];
+                let group = "المجموعة الأساسية"; let name = key; let category = "UNISEX";
+
+                let match1 = key.match(/^(.*?):\s*(.*?)\s*\((.*?)\)$/);
+                if(match1) { group = match1[1].trim(); name = match1[2].trim(); category = match1[3].trim(); }
+                
+                let rawImg = catData.image && catData.image.trim() !== '' ? catData.image : 'https://via.placeholder.com/300/f5f5f5/111111?text=R+O+S+%C3%89+E';
+                products.push({ id: 'p' + pIndex++, group: group, name: name, category: category, image: fixImageLink(rawImg), fullCatName: key });
+            });
+            renderProducts();
+            calculateCartTotals();
+        }
+    });
+
+    function renderProducts() {
+        const container = document.getElementById('productsContainer'); container.innerHTML = '';
+        const groups = [...new Set(products.map(p => p.group))];
+        
+        groups.forEach((group, index) => {
+            const accBtn = document.createElement('button'); accBtn.className = 'group-accordion';
+            accBtn.innerHTML = `<span>${group}</span> <i class="fas fa-plus"></i>`;
+            
+            const panel = document.createElement('div'); panel.className = 'group-panel'; panel.id = `panel-${index}`;
+            
+            accBtn.onclick = function() {
+                this.classList.toggle("active");
+                if (panel.style.display === "block") { panel.style.display = "none"; this.querySelector('i').className = "fas fa-plus"; } 
+                else { panel.style.display = "block"; this.querySelector('i').className = "fas fa-minus"; }
+            };
+            
+            const groupProducts = products.filter(p => p.group === group);
+            const categories = [...new Set(groupProducts.map(p => p.category))];
+            
+            categories.forEach(category => {
+                const catTitle = document.createElement('div'); catTitle.className = 'category-subtitle';
+                let dispCat = category;
+                if(category === 'FOR WOMEN') dispCat = 'FOR WOMEN'; else if(category === 'FOR MEN') dispCat = 'FOR MEN'; else if(category === 'UNISEX') dispCat = 'UNISEX';
+                catTitle.innerHTML = dispCat; panel.appendChild(catTitle);
+                
+                const grid = document.createElement('div'); grid.className = 'products-grid';
+                const catProducts = groupProducts.filter(p => p.category === category);
+                catProducts.forEach(product => {
+                    if (orderCart[product.id] === undefined) orderCart[product.id] = 0;
+                    let price = dynamicCatalog[product.fullCatName] ? dynamicCatalog[product.fullCatName].defaultPrice : 0;
+                    
+                    const card = document.createElement('div'); card.className = 'product-card';
+                    card.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}">
+                        <h3>${product.name}</h3>
+                        <p class="product-price">${price} EGP</p>
+                        <div class="counter">
+                            <button onclick="updateQty('${product.id}', -1)">-</button>
+                            <span id="qty-${product.id}">${orderCart[product.id]}</span>
+                            <button onclick="updateQty('${product.id}', 1)">+</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                panel.appendChild(grid);
+            });
+            container.appendChild(accBtn); container.appendChild(panel);
+        });
+    }
+
+    function updateQty(productId, change) {
+        let newQty = orderCart[productId] + change;
+        if (newQty >= 0) { 
+            orderCart[productId] = newQty; 
+            document.getElementById(`qty-${productId}`).innerText = newQty; 
+            calculateCartTotals();
+        }
+    }
+
+    // === حساب المجاميع والبرومو كود بطريقة (Amazon) ===
+    function calculateCartTotals() {
+        let subtotal = 0;
+        products.forEach(p => {
+            if (orderCart[p.id] > 0) {
+                let price = dynamicCatalog[p.fullCatName] ? dynamicCatalog[p.fullCatName].defaultPrice : 0;
+                subtotal += (price * orderCart[p.id]);
+            }
+        });
+
+        document.getElementById('subtotalVal').innerText = subtotal.toFixed(2) + ' EGP';
+        
+        let discount = 0;
+        if (appliedPromo) {
+            discount = (subtotal * appliedPromo.discountPercent) / 100;
+            document.getElementById('discountRow').style.display = 'flex';
+            document.getElementById('discountCodeText').innerText = `Promo Code (${appliedPromo.code}):`;
+            document.getElementById('discountVal').innerText = '-' + discount.toFixed(2) + ' EGP';
+        } else {
+            document.getElementById('discountRow').style.display = 'none';
+        }
+
+        let finalTotal = Math.max(0, subtotal - discount);
+        document.getElementById('finalTotalVal').innerText = finalTotal.toFixed(2) + ' EGP';
+    }
+
+    function applyPromoCode() {
+        let code = document.getElementById('promoCodeInput').value.trim().toUpperCase();
+        let msgDiv = document.getElementById('promoMsg');
+        
+        if (!code) { msgDiv.style.color = '#e74c3c'; msgDiv.innerText = 'أدخل الكود أولاً'; return; }
+        
+        let promo = promoCodesData[code];
+        if (!promo) {
+            msgDiv.style.color = '#e74c3c'; msgDiv.innerText = '❌ البرومو كود غير صحيح';
+            appliedPromo = null; calculateCartTotals(); return;
+        }
+
+        let now = new Date().getTime();
+        if (promo.expiryDate && now > new Date(promo.expiryDate).getTime()) {
+            msgDiv.style.color = '#e74c3c'; msgDiv.innerText = '❌ انتهت صلاحية هذا الكود';
+            appliedPromo = null; calculateCartTotals(); return;
+        }
+
+        if (promo.maxUses && promo.usedCount >= promo.maxUses) {
+            msgDiv.style.color = '#e74c3c'; msgDiv.innerText = '❌ عذراً، تم استنفاد مرات استخدام هذا الكود';
+            appliedPromo = null; calculateCartTotals(); return;
+        }
+
+        appliedPromo = { code: code, discountPercent: promo.discountPercent };
+        msgDiv.style.color = '#27ae60'; msgDiv.innerText = `✅ تم تطبيق الخصم بنجاح!`;
+        calculateCartTotals();
+    }
+
+    function trackOrder() {
+        const oid = document.getElementById('trackOrderId').value.trim().toUpperCase(); const ph = document.getElementById('trackPhone').value.trim();
+        const resultDiv = document.getElementById('trackResult');
+        if(!oid || !ph) { resultDiv.innerHTML = '<span style="color:#e74c3c;">الرجاء إدخال رقم الطلب والموبايل</span>'; return; }
+        
+        resultDiv.innerHTML = 'جاري البحث...';
+        db.ref('rosee_data/orders').once('value').then(snap => {
+            let orders = snap.val() || []; if (!Array.isArray(orders)) orders = Object.values(orders);
+            allOrdersList = orders; let order = orders.find(o => o.id === oid && o.phone.includes(ph));
+            
+            if(order) {
+                const statusAr = { 'pending': 'معلق (قيد المراجعة)', 'processing': 'قيد التنفيذ', 'packaged': 'تم التغليف', 'delivered': 'تم التوصيل' };
+                let msg = `<div style="padding:10px; border:1px solid var(--rose-gold); margin-top:10px; background:white;">حالة الطلب: <b>${statusAr[order.status]}</b></div>`;
+                let diffMinutes = (new Date().getTime() - new Date(order.date).getTime()) / (1000 * 60);
+
+                if (order.status === 'pending' && diffMinutes <= 60) { msg += `<button class="btn-edit-order" onclick="enableEditMode('${order.id}')">تعديل الطلب</button>`; } 
+                else if (order.status === 'pending') { msg += `<p style="font-size:11px; color:#888; margin-top:10px;">انتهى وقت التعديل المسموح.</p>`; }
+                resultDiv.innerHTML = msg;
+            } else { resultDiv.innerHTML = '<span style="color:#e74c3c;">عفواً، لا يوجد طلب مطابق.</span>'; }
+        });
+    }
+
+    function enableEditMode(orderId) {
+        let order = allOrdersList.find(o => o.id === orderId); if(!order) return;
+        editingOrderId = order.id;
+        document.getElementById('customerName').value = order.name; document.getElementById('customerAddress').value = order.address;
+        let phones = order.phone.split(' - '); document.getElementById('customerPhone').value = phones[0] || ''; document.getElementById('customerPhone2').value = phones[1] || '';
+        Object.keys(orderCart).forEach(k => orderCart[k] = 0);
+        
+        order.items.forEach(item => { let p = products.find(prod => prod.fullCatName === item.name); if(p) orderCart[p.id] = item.qty; });
+        renderProducts(); calculateCartTotals();
+        document.getElementById('mainSubmitBtn').innerHTML = `تأكيد التعديل`;
+        document.getElementById('orderForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function sendToWhatsApp() {
+        const name = document.getElementById('customerName').value.trim(); const phone = document.getElementById('customerPhone').value.trim();
+        const phone2 = document.getElementById('customerPhone2').value.trim(); const address = document.getElementById('customerAddress').value.trim();
+        
+        if (!name || !phone || !address) { alert("يرجى إكمال البيانات الأساسية."); return; }
+
+        let hasItems = false; let selectedItems = []; let subtotal = 0;
+        products.forEach(product => {
+            if (orderCart[product.id] > 0) {
+                hasItems = true; let price = dynamicCatalog[product.fullCatName] ? dynamicCatalog[product.fullCatName].defaultPrice : 0;
+                selectedItems.push({ name: product.fullCatName, qty: orderCart[product.id], unitPrice: price });
+                subtotal += (price * orderCart[product.id]);
+            }
+        });
+
+        if (!hasItems) { alert("الرجاء اختيار منتج من المجموعة."); return; }
+
+        const btn = document.getElementById('mainSubmitBtn'); btn.innerText = "جاري التأكيد..."; btn.disabled = true;
+
+        db.ref('rosee_data').once('value').then((snapshot) => {
+            let rootData = snapshot.val() || {};
+            let orders = rootData.orders || []; if (!Array.isArray(orders)) orders = Object.values(orders);
+            
+            // تحديث عدد استخدامات الكود
+            if (appliedPromo && rootData.promoCodes && rootData.promoCodes[appliedPromo.code]) {
+                let pObj = rootData.promoCodes[appliedPromo.code];
+                pObj.usedCount = (pObj.usedCount || 0) + 1;
+                db.ref(`rosee_data/promoCodes/${appliedPromo.code}`).set(pObj);
+            }
+
+            let isEdit = (editingOrderId !== null); let finalOrderId = editingOrderId || ("ORD-" + Math.floor(Math.random() * 90000 + 10000));
+            
+            // إرسال قيم الخصم بصيغة رقمية ليفهمها الداش بورد
+            let dVal = appliedPromo ? appliedPromo.discountPercent : 0;
+            let dType = appliedPromo ? 'percent' : 'fixed';
+            let dReason = appliedPromo ? `Promo: ${appliedPromo.code}` : '';
+
+            let orderObj = { 
+                id: finalOrderId, date: new Date().toISOString(), name: name, phone: phone + (phone2 ? ' - ' + phone2 : ''), address: address, status: "pending", 
+                discountVal: dVal, discountType: dType, discountReason: dReason, 
+                lastModifiedBy: "العميل", source: "أونلاين", archived: false, history: [], items: selectedItems 
+            };
+
+            if (isEdit) {
+                let orderIndex = orders.findIndex(o => o.id === editingOrderId);
+                if (orderIndex > -1) { orderObj.history = orders[orderIndex].history || []; orderObj.history.unshift({ timestamp: new Date().toISOString(), user: "العميل", action: "تعديل الطلب" }); orders[orderIndex] = orderObj; } 
+                else { alert("خطأ!"); btn.disabled = false; return; }
+            } else { orderObj.history = [{ timestamp: new Date().toISOString(), user: "النظام", action: "طلب أونلاين" }]; orders.unshift(orderObj); }
+
+            db.ref('rosee_data/orders').set(orders).then(() => {
+                let orderText = isEdit ? `✨ *تعديل طلب سابق - R O S É E* ✨\nرقم الطلب: ${finalOrderId}\n\n` : `✨ *طلب جديد - R O S É E* ✨\n\n`;
+                orderText += `👤 *الاسم:* ${name}\n📞 *الموبايل:* ${phone}\n`; if (phone2) orderText += `📞 *موبايل بديل:* ${phone2}\n`;
+                orderText += `📍 *العنوان:* ${address}\n\n🛍 *المنتجات:*\n`;
+                
+                products.forEach(product => { if (orderCart[product.id] > 0) { orderText += `▪️ ${product.name} (${product.category}) ❌ ${orderCart[product.id]}\n`; } });
+                
+                orderText += `\n🧾 *تفاصيل الحساب:*\n`;
+                orderText += `المجموع الفرعي: ${subtotal} EGP\n`;
+                if(appliedPromo) {
+                    let discountAmt = (subtotal * appliedPromo.discountPercent) / 100;
+                    orderText += `الخصم (${appliedPromo.code}): -${discountAmt.toFixed(0)} EGP (${appliedPromo.discountPercent}%)\n`;
+                }
+                orderText += `*الإجمالي النهائي: ${document.getElementById('finalTotalVal').innerText}*\n`;
+
+                const whatsappUrl = `https://wa.me/${brandWhatsAppNumber}?text=${encodeURIComponent(orderText)}`;
+                alert("تم استلام طلبك بنجاح! سيتم تحويلك لواتساب للتأكيد."); window.open(whatsappUrl, '_blank'); window.location.reload();
+            });
+        }).catch(error => { alert("تأكد من اتصالك بالإنترنت."); btn.innerText = "إتمام الطلب"; btn.disabled = false; });
+    }
+</script>
+</body>
+</html>
